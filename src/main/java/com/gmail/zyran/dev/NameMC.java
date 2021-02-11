@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
 public class NameMC extends JavaPlugin {
 
     private static NameMC nameMC;
-    private Settings config, messages;
+    private final Settings config, messages;
 
     public NameMC() {
         nameMC = this;
