@@ -1,4 +1,4 @@
-package me.zyran.namemc.utils;
+package com.gmail.zyran.dev.utils;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;

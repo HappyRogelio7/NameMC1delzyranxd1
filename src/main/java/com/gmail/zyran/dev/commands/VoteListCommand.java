@@ -1,9 +1,9 @@
-package me.zyran.namemc.commands;
+package com.gmail.zyran.dev.commands;
 
 import com.google.gson.Gson;
-import me.zyran.namemc.NameMC;
-import me.zyran.namemc.utils.Callback;
-import me.zyran.namemc.utils.Util;
+import com.gmail.zyran.dev.NameMC;
+import com.gmail.zyran.dev.utils.Callback;
+import com.gmail.zyran.dev.utils.Util;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

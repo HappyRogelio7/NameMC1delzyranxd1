@@ -1,4 +1,4 @@
-package me.zyran.namemc.utils;
+package com.gmail.zyran.dev.utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;

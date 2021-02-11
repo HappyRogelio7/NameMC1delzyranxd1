@@ -1,9 +1,9 @@
-package me.zyran.namemc;
+package com.gmail.zyran.dev;
 
-import me.zyran.namemc.commands.VoteCommand;
-import me.zyran.namemc.commands.VoteListCommand;
-import me.zyran.namemc.utils.Settings;
-import me.zyran.namemc.utils.Util;
+import com.gmail.zyran.dev.commands.VoteCommand;
+import com.gmail.zyran.dev.commands.VoteListCommand;
+import com.gmail.zyran.dev.utils.Settings;
+import com.gmail.zyran.dev.utils.Util;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class NameMC extends JavaPlugin {
