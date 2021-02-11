@@ -21,7 +21,7 @@ public class VoteListCommand extends Command {
 
     public boolean execute(CommandSender sender, String aliases, String[] args) {
 
-        if (sender instanceof Player && sender.hasPermission(NameMC.getNameMC().getConfigFile().getString("Server.permission"))) {
+        if (sender instanceof Player && !sender.hasPermission(NameMC.getNameMC().getConfigFile().getString("Server.permission"))) {
             sender.sendMessage(NameMC.getNameMC().getMessages().getColouredString("General.noPermission"));
             return false;
         }
