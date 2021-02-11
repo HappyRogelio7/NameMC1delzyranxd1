@@ -1,14 +1,17 @@
 package com.gmail.zyran.dev.commands;
 
+import com.github.kevinsawicki.http.HttpRequest;
+import com.gmail.zyran.dev.NameMC;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
-import com.gmail.zyran.dev.NameMC;
-import com.gmail.zyran.dev.utils.Callback;
-import com.gmail.zyran.dev.utils.Util;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.UUID;
 
 public class VoteCommand extends Command {
 
@@ -19,124 +22,111 @@ public class VoteCommand extends Command {
     }
 
     public boolean execute(CommandSender sender, String aliases, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (sender instanceof Player) {
+            executePlayer((Player) sender, args);
+        } else {
+            executeConsole((ConsoleCommandSender) sender, args);
+        }
+        return true;
+    }
 
-            if (args.length < 1) {
-                sender.sendMessage(NameMC.getMessages().getColouredString("Exceptions.noPlayer"));
-                return true;
-            }
-
-            Util.getString("https://api.mojang.com/users/profiles/minecraft/" + args[0], new Callback<String>() {
-                public void done(String json) {
-                    try {
-                        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
-                        if (jsonObject == null) {
-                            sender.sendMessage(NameMC.getMessages().getColouredString("Exceptions.noPremiumPlayer")
-                                    .replaceAll("<playerName>", args[0])
-                            );
-                            return;
-                        }
-
-                        String serverLinkAPI = NameMC.getConfiguration().getString("Server.Links.server");
-                        String serverIP = NameMC.getConfiguration().getString("Server.ip");
-
-                        Util.getString(serverLinkAPI
-                                .replaceAll("<server>", serverIP)
-                                .replace("<uuid>", Util
-                                        .setDashedUUID(
-                                                jsonObject
-                                                        .get("id")
-                                                        .getAsString())
-                                        .toString()
-                                ), new Callback<String>() {
-
-                            public void done(String response) {
-                                boolean hasVoted = Boolean.parseBoolean(response);
-                                if (hasVoted) {
-                                    sender.sendMessage(NameMC.getMessages().getColouredString("Votes.playerHasVoted")
-                                            .replaceAll("<playerName>", args[0]));
-                                } else {
-                                    sender.sendMessage(NameMC.getMessages().getColouredString("Votes.playerHasNotVoted")
-                                            .replaceAll("<playerName>", args[0]));
-                                }
-                            }
-
-                            public void exception(Exception exception) {
-                                System.out.println(exception.getMessage());
-                            }
-
-                        });
-                    } catch (JsonSyntaxException e) {
-                        System.out.println(e.getMessage());
-                    }
-                }
-
-                public void exception(Exception exception) {
-                    System.out.println(exception.getMessage());
-                }
-            });
-            return true;
+    private void executeConsole(ConsoleCommandSender sender, String[] args) {
+        if (args.length < 1) {
+            sender.sendMessage(NameMC.getNameMC().getMessages().getColouredString("Exceptions.noPlayer"));
+            return;
         }
 
-        Player player = (Player) sender;
+        HttpRequest httpRequest;
+        try {
+            httpRequest = HttpRequest.get(new URL("https://api.mojang.com/users/profiles/minecraft/" + args[0]));
+            JsonObject jsonObject = gson.fromJson(httpRequest.body(), JsonObject.class);
 
-        if (!player.hasPermission(NameMC.getConfiguration().getString("Server.permission"))){
-            player.sendMessage(NameMC.getMessages().getColouredString("General.noPermission"));
-            return false;
+            if (jsonObject == null) {
+                sender.sendMessage(NameMC.getNameMC().getMessages().getColouredString("Exceptions.noPremiumPlayer")
+                        .replaceAll("<playerName>", args[0])
+                );
+                return;
+            }
+
+            String serverLinkAPI = NameMC.getNameMC().getConfigFile() .getString("Server.Links.server");
+            String serverIP = NameMC.getNameMC().getConfigFile().getString("Server.ip");
+
+            httpRequest = HttpRequest.get(
+                    new URL(serverLinkAPI
+                            .replaceAll("<uuid>", jsonObject.get("id").getAsString())
+                            .replaceAll("<server>", serverIP)));
+
+            boolean hasVoted = Boolean.parseBoolean(httpRequest.body());
+
+            if (hasVoted) {
+                sender.sendMessage(NameMC.getNameMC().getMessages().getColouredString("Votes.playerHasVoted")
+                        .replaceAll("<playerName>", args[0]));
+            } else {
+                sender.sendMessage(NameMC.getNameMC().getMessages().getColouredString("Votes.playerHasNotVoted")
+                        .replaceAll("<playerName>", args[0]));
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void executePlayer(Player player, String[] args) {
+        if (!player.hasPermission(NameMC.getNameMC().getConfigFile().getString("Server.permission"))) {
+            player.sendMessage(NameMC.getNameMC().getMessages().getColouredString("General.noPermission"));
+            return;
         }
 
         if (args.length < 1) {
             sendInfoCommand(player);
-            return false;
+            return;
         }
 
         if (args[0].equalsIgnoreCase("verify")) {
-            Util.getString("https://api.mojang.com/users/profiles/minecraft/" + player.getName(), new Callback<String>() {
+            try {
+                HttpRequest httpRequest;
+                httpRequest = HttpRequest.get(new URL("https://api.mojang.com/users/profiles/minecraft/" + player.getName()));
 
-                public void done(String response) {
-                    JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
-                    if (jsonObject == null) {
-                        sender.sendMessage(NameMC.getMessages().getColouredString("Votes.needPremiumUser"));
-                        return;
-                    }
+                JsonObject jsonObject = gson.fromJson(httpRequest.body(), JsonObject.class);
 
-                    String serverLinkAPI = NameMC.getConfiguration().getString("Server.Links.server");
-                    String serverIP = NameMC.getConfiguration().getString("Server.ip");
-
-                    Util.getString(serverLinkAPI
-                            .replaceAll("<uuid>", player.getUniqueId().toString())
-                            .replaceAll("<server>", serverIP), new Callback<String>() {
-
-                        public void done(String response) {
-                            boolean hasVoted = Boolean.parseBoolean(response);
-                            if (hasVoted) {
-                                sender.sendMessage(NameMC.getMessages().getColouredString("Votes.registeredVote"));
-                            } else {
-                                sender.sendMessage(NameMC.getMessages().getColouredString("Votes.notRegisteredVote"));
-                            }
-                        }
-
-                        public void exception(Exception exception) {
-                            System.out.println(exception.getMessage());
-                        }
-                    });
+                if (jsonObject == null) {
+                    player.sendMessage(NameMC.getNameMC().getMessages().getColouredString("Votes.needPremiumUser"));
+                    return;
                 }
 
-                public void exception(Exception exception) {
-                    System.out.println(exception.getMessage());
+                String serverLinkAPI = NameMC.getNameMC().getConfigFile().getString("Server.Links.server");
+                String serverIP = NameMC.getNameMC().getConfigFile().getString("Server.ip");
+
+                httpRequest = HttpRequest.get(new URL(serverLinkAPI
+                        .replaceAll("<uuid>", player.getUniqueId().toString())
+                        .replaceAll("<server>", serverIP)));
+
+                boolean hasVoted = Boolean.parseBoolean(httpRequest.body());
+                if (hasVoted) {
+                    player.sendMessage(NameMC.getNameMC().getMessages().getColouredString("Votes.registeredVote"));
+                } else {
+                    player.sendMessage(NameMC.getNameMC().getMessages() .getColouredString("Votes.notRegisteredVote"));
                 }
-            });
-            return false;
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
         }
-        sendInfoCommand(player);
-        return true;
     }
 
     private void sendInfoCommand(Player player) {
-        player.sendMessage(NameMC.getMessages().getColouredString("Votes.voteMessage")
-                .replaceAll("<voteCommand>", NameMC.getConfiguration().getColouredString("Commands.checkVote"))
-                .replaceAll("<serverIP>", NameMC.getConfiguration().getColouredString("Server.ip"))
-                .replaceAll("<serverName>", NameMC.getConfiguration().getColouredString("Server.serverName")));
+        player.sendMessage(NameMC.getNameMC().getMessages().getColouredString("Votes.voteMessage")
+                .replaceAll("<voteCommand>", NameMC.getNameMC().getConfigFile().getColouredString("Commands.checkVote"))
+                .replaceAll("<serverIP>", NameMC.getNameMC().getConfigFile().getColouredString("Server.ip"))
+                .replaceAll("<serverName>", NameMC.getNameMC().getConfigFile().getColouredString("Server.serverName")));
 
+    }
+
+    private UUID setDashedUUID(String uuidString) {
+        if (uuidString != null) {
+            String uuid = uuidString.replace("\"", "");
+            return UUID.fromString(uuid.substring(0, 8) + "-" + uuid.substring(8, 12) + "-" + uuid
+                    .substring(12, 16) + "-" + uuid
+                    .substring(16, 20) + "-" + uuid.substring(20, 32));
+        }
+        return null;
     }
 }
