@@ -1,0 +1,12 @@
+Server:
+  ip: "zyran.net"
+  serverName: "&bZyran"
+  permission: "namemc.use.command"
+
+  Links:
+    likes: "https://api.namemc.com/server/<server>/likes"
+    server: "https://api.namemc.com/server/<server>/likes?profile=<uuid>"
+
+Commands:
+  checkVote: "vote"
+  voteList: "voteList"

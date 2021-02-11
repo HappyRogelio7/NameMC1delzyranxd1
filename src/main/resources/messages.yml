@@ -1,0 +1,33 @@
+General:
+  notAllowedConsole: "&4You cannot do this from the console"
+  noPermission: "&4You do not have permission to use this command."
+  numberPlayersVotedForTheServer: |-
+    &8&m========================================&r
+    &f &r
+    &f              <serverName>
+    &f &r
+    &fThe <serverName>&f server has &e<votes> &fvotes from &bNameMC.
+    &f &r
+    &8&m========================================&r
+
+Votes:
+  playerHasNotVoted: "&4The player &e<playerName> &4has yet to vote for the server."
+  playerHasVoted: "&aThe player &e<playerName> &ahas voted for the server."
+  voteMessage: |-
+    &8&m========================================&r
+    &f &r
+    &f              <serverName>
+    &f &r
+    &fUse the &e/<voteCommand> verify &fcommand after
+    &fvoting for the server at:
+    &f &r
+    &b&nhttps://namemc.com/server/<serverIP>
+    &f &r
+    &8&m========================================&r
+  needPremiumUser: "&4You need to be a premium user to be able to verify if you have voted on the server."
+  registeredVote: "&aYour vote has been verified from the &bNameMC &apage."
+  notRegisteredVote: "&4Your vote could not be verified on the &bNameMC &4page."
+
+Exceptions:
+  noPlayer: "&4You need to provide the name of a premium player to use this command."
+  noPremiumPlayer: "&4The <playerName> player is not a premium user."
